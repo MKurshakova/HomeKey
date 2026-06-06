@@ -1,0 +1,88 @@
+HomeKey Realty
+
+Branża: agencja nieruchomości
+
+Opis firmy: agencja zajmująca się sprzedażą i wynajmem nieruchomości. Priorytet: szybki kontakt i
+
+prezentacja ofert.
+
+Grupa docelowa: kupujący i sprzedający w wieku 25–55 lat (komputery stacjonarne + urządzenia mobilne).
+
+Cel strony internetowej: generowanie leadów (formularz kontaktowy) + prezentacja ofert i doświadczenia.
+
+KPI: liczba formularzy wysłanych w ciągu miesiąca.
+
+
+
+WARUNKI ZALICZENIA I KRYTERIA OCENY (ZALICZENIE PRZEDMIOTU)
+
+Zaliczenie przedmiotu odbywa się na podstawie działającego projektu końcowego (Single Page Application), który musi zostać opublikowany w Internecie. Proces zaliczenia ma formę nagranej prezentacji obrony (symulacja spotkania biznesowego z klientem połączona z  Code Review).
+
+Waga Ocen (100%):
+
+1. Architektura UI, Tailwind v4 i Responsywność (30%)
+Oczekujemy: Zgodności zakodowanego układu komponentów z dostarczoną makietą Figma oraz wdrożenia Design Tokens.
+Kryteria: Bezbłędne wykorzystanie systemu Tailwind CSS v4 (konfiguracja zmiennych z Figmy w dyrektywie @theme, poprawne zarządzanie wariantami klas w komponentach za pomocą funkcji narzędziowych, np. clsx/tailwind-merge). Strona nie może "rozsypywać się" na żadnej szerokości ekranu (poprawne użycie RWD Mobile-First). Wymagane jest również wdrożenie płynnych mikro-interakcji i animacji (np. off-canvas menu, stany hover).
+
+2. Architektura React, TypeScript i Logika Biznesowa (30%)
+Oczekujemy: Skalowalnej struktury komponentów funkcyjnych oraz bezpiecznej walidacji danych.
+Kryteria: Całkowity brak błędów kompilacji w konsoli (F12) oraz w terminalu (Vite). Rygorystyczne typowanie danych w języku TypeScript (użycie interface / type, bezwzględny brak typu any). Profesjonalna obsługa formularza przy użyciu React Hook Form oraz asynchroniczna walidacja strukturalna za pomocą biblioteki Zod (wyświetlanie precyzyjnych komunikatów błędu pod polami, bez zbędnych re-renderów całego widoku). 
+
+3. Optymalizacja i Wdrożenie - DevOps (20%)
+Oczekujemy: Zoptymalizowanego projektu wdrożonego produkcyjnie na publiczny serwer (np. Vercel, Netlify).
+Kryteria: Aplikacja musi zostać poprawnie zbudowana przez bundler do wersji produkcyjnej. Wynik w teście Google Lighthouse (kategorie Performance, Accessibility oraz Best Practices) na rygorystycznym poziomie minimum 80 punktów. 
+
+4. Obrona Projektu i Code Review - "Tech Pitch" (20%)
+Oczekujemy: 3-minutowej prezentacji wdrożonej aplikacji połączonej z obroną kodu przed Głównym Architektem (CTO).
+Kryteria: Umiejętność rzeczowego uzasadnienia wykorzystanych wzorców projektowych (np. dlaczego wydzielono "Dumb Components", jak zhermetyzowano logikę walidacji, jak działa funkcja łącząca klasy Tailwinda). Ocenia się profesjonalizm i umiejętność przekazania informacji.
+
+
+przesyłamy na moodle: 
+
+linki do strony
+
+zip do kodu strony 
+
+projekt figma 
+
+video "Tech Pitch"
+
+Otwarcie 
+
+Dzień dobry, chciałabym zaprezentować projekt Architech Agency, landing page agencji architektonicznej. Strona jest wdrożona publicznie na Vercelu i uzyskała 99 punktów Performance oraz 90 Accessibility w Google Lighthouse. Projekt jest zbudowany w React z Vite i TypeScript, z Tailwind CSS v4 jako systemem stylowania.
+
+Responsywność 
+
+Strona jest zbudowana w podejściu Mobile First, najpierw projektuję układ na telefon, potem dodaję klasy z prefiksem lg: dla desktopu. Tailwind robi to bez pisania media queries ręcznie. Przykład z sekcji Services, na telefonie karty usług są w jednej kolumnie, na desktopie lg:grid lg:grid-cols-2 układa je w siatkę dwóch kolumn. To jedna zmiana klasy, nie osobny plik CSS. Przyciski strzałek slidera mają klasę hidden lg:flex na telefonie użytkownik scrolluje palcem i przyciski są zbędne, na desktopie mysz nie może wygodnie scrollować poziomo więc przyciski są niezbędne.
+
+Architektura komponentów 
+
+Strona jest podzielona na osobne komponenty - Navbar, Hero, ServiceCard, TeamCard, ProjectsCards i tak dalej. App.tsx działa jak spis treści który importuje komponenty i układa je w kolejności.
+
+Podział ma trzy powody. Po pierwsze reużywalność - komponent Button napisany raz jest używany w Hero, Contact i TeamCard, zmiana w jednym pliku aktualizuje go wszędzie. Po drugie izolacja - zmiana w ServiceCard nie wpływa na kod Navbar. Po trzecie czytelność - gdy coś się psuje w Reviews, wiem dokładnie który plik otworzyć. Design Tokens są zdefiniowane w index.css przez dyrektywę @theme, zmiana --color-primary w jednym miejscu aktualizuje każdy przycisk i hover na całej stronie.
+
+Typowanie TypeScript 
+
+Każda tablica danych ma jawny interface. W sekcji Services interface Service definiuje trzy pola: title string, description string, icon React.ReactNode. Tablica services jest otypowana tym interfejsem. Dzięki temu TypeScript wykrywa błędy zanim uruchomię przeglądarkę, literówka w nazwie pola, brakujące pole, zły typ, wszystko podkreślone w edytorze natychmiast. Typ any jest w projekcie całkowicie nieobecny.
+
+Formularz 
+
+Formularz kontaktowy używa React Hook Form z zodResolver i Zod. Zod definiuje schemat, reguły dla każdego pola z precyzyjnymi komunikatami, na przykład z.string().min(2, 'Imię musi mieć co najmniej 2 znaki'). Jeden schemat robi dwie rzeczy naraz, jest walidacją i jednocześnie typem TypeScript przez z.infer, więc nie piszę osobnego interface ręcznie. React Hook Form przejmuje stan pól przez register() bez useState na każde pole - eliminuje zbędne re-rendery widoku przy wpisywaniu. Formularz obsługuje trzy stany wizualne: domyślny, isSubmitting - spinner na przycisku i blokada przed ponownym kliknięciem, oraz isSubmitSuccessful - ekran potwierdzenia z możliwością wysłania kolejnej wiadomości.
+
+Animacje i Button 
+
+Każda sekcja ma animację wjazdu przez własny hook useInView który używa Intersection Observer API. Gdy element wchodzi w viewport, hook zmienia stan inView z false na true i React rerenderuje komponent z nowymi klasami Tailwind, efekt wjazdu z dołu. Karty wjeżdżają kaskadowo przez transitionDelay równy index razy 100 milisekund. Komponent Button używa biblioteki CVA - class-variance-authority - do zarządzania wariantami default, outline i ghost. 
+
+Zamknięcie 
+
+Projekt jest dostępny publicznie na Vercelu, repozytorium jest na GitHubie. Chętnie odpowiem na pytania.
+
+Wskazówki do obrony:
+
+Miej otwartą stronę na żywo i pokazuj każdą funkcję podczas mówienia o niej — kliknij hamburger, wypełnij formularz błędnie, przewiń stronę żeby pokazać animacje.
+
+W DevTools pokaż że konsola jest czysta - zero czerwonych błędów.
+
+Pokaż wynik Lighthouse na żywo - wejdź w zakładkę Lighthouse i pokaż screenshota lub uruchom ponownie.
+
+Mów spokojnie i używaj nazw technicznych - to pokazuje że rozumiesz co zrobiłeś/aś.
