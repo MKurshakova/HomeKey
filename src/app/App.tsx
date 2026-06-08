@@ -1,11 +1,10 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-
-// ═════════════════════════════════════════════════════════════════════════════
-// TYPES & INTERFACES
-// ═════════════════════════════════════════════════════════════════════════════
+import { CtaButton } from "./components/shared/CtaButton";
+import { SectionHeading } from "./components/shared/SectionHeading";
+import { useInView } from "./hooks/useInView";
+import { contactFormSchema, type ContactFormData } from "./validation/contactForm";
 
 interface NavLink {
   label: string;
@@ -13,7 +12,7 @@ interface NavLink {
 }
 
 interface Service {
-  icon: JSX.Element;
+  icon: React.ReactNode;
   title: string;
   desc: string;
 }
@@ -41,6 +40,7 @@ interface TeamMember {
   role: string;
   deals: string;
   img: string;
+  objectPosition?: string;
 }
 
 interface FAQ {
@@ -63,42 +63,8 @@ interface Stat {
   label: string;
 }
 
-// ─── Contact Form Validation ──────────────────────────────────────────────────
-
-const contactFormSchema = z.object({
-  name: z.string().min(2, "Imię musi mieć co najmniej 2 znaki").max(50, "Imię jest za długie"),
-  email: z.string().email("Podaj poprawny adres e-mail"),
-  phone: z.string().regex(/^\+?[\d\s\-()]+$/, "Podaj poprawny numer telefonu").optional().or(z.literal("")),
-  interest: z.enum(["buying", "selling", "renting", "investing", "valuation"]),
-  message: z.string().min(10, "Wiadomość musi mieć co najmniej 10 znaków").max(1000, "Wiadomość jest za długa"),
-});
-
-type ContactFormData = z.infer<typeof contactFormSchema>;
-
-// ─── Custom Hooks ────────────────────────────────────────────────────────────
-
-function useInView(ref: React.RefObject<HTMLElement>, options = { threshold: 0.1 }) {
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        setIsVisible(true);
-        observer.unobserve(entry.target);
-      }
-    }, options);
-
-    if (ref.current) observer.observe(ref.current);
-    return () => { if (ref.current) observer.unobserve(ref.current); };
-  }, [ref, options]);
-
-  return isVisible;
-}
-
-// ─── SVG Icons ────────────────────────────────────────────────────────────────
-
 function IconSearch() { return <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="10" cy="10" r="6" stroke="currentColor" strokeWidth="2"/><path d="m14 14 4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>; }
-function IconMenu({ open }: { open: boolean }) { return <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path opacity={open ? 0 : 1} d="M3 5h18v2H3V5zm0 7h18v2H3v-2zm0 7h18v2H3v-2z" transition="opacity 0.2s"/><path opacity={open ? 1 : 0} d="M5 5l14 14M19 5L5 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" transition="opacity 0.2s"/></svg>; }
+function IconMenu({ open }: { open: boolean }) { return <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path style={{ opacity: open ? 0 : 1, transition: "opacity 0.2s" }} d="M3 5h18v2H3V5zm0 7h18v2H3v-2zm0 7h18v2H3v-2z"/><path style={{ opacity: open ? 1 : 0, transition: "opacity 0.2s" }} d="M5 5l14 14M19 5L5 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>; }
 function IconFacebook() { return <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.99 4.39 10.954 10.125 11.854V15.47h-3.047V12h3.047V9.356c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.234 2.686.234v2.953h-1.513c-1.49 0-1.955.925-1.955 1.874V12h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12c0-6.63-5.37-12-12-12z"/></svg>; }
 function IconTwitter() { return <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>; }
 function IconInstagram() { return <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 6.63 5.37 12 12 12s12-5.37 12-12-5.37-12-12-12zm5.521 17.398c-.559.559-1.538.904-2.687.904H9.166c-1.149 0-2.128-.345-2.687-.904a3.808 3.808 0 01-.904-2.687v-5.368c0-1.149.345-2.128.904-2.687.559-.559 1.538-.904 2.687-.904h5.668c1.149 0 2.128.345 2.687.904.559.559.904 1.538.904 2.687v5.368c0 1.149-.345 2.128-.904 2.687z"/></svg>; }
@@ -145,8 +111,8 @@ const testimonials: Testimonial[] = [
 
 const team: TeamMember[] = [
   { name: "Jakub Harrington", role: "Starszy agent sprzedaży", deals: "340 sfinalizowanych transakcji", img: "https://images.unsplash.com/photo-1647580427155-0483906cb9de?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxyZWFsJTIwZXN0YXRlJTIwYWdlbnQlMjBwcm9mZXNzaW9uYWwlMjBwb3J0cmFpdHxlbnwxfHx8fDE3ODA2NDYzMDJ8MA&ixlib=rb-4.1.0&q=80&w=400" },
-  { name: "Zofia Laurent", role: "Specjalistka ds. wynajmu", deals: "210 skutecznych wynajmów", img: "https://images.unsplash.com/photo-1581065178047-8ee15951ede6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwyfHxyZWFsJTIwZXN0YXRlJTIwYWdlbnQlMjBwcm9mZXNzaW9uYWwlMjBwb3J0cmFpdHxlbnwxfHx8fDE3ODA2NDYzMDJ8MA&ixlib=rb-4.1.0&q=80&w=400" },
-  { name: "Maria Gonzalez", role: "Doradca inwestycyjny", deals: "Portfel o wartości 42 mln zł", img: "https://images.unsplash.com/photo-1610631066894-62452ccb927c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwzfHxyZWFsJTIwZXN0YXRlJTIwYWdlbnQlMjBwcm9mZXNzaW9uYWwlMjBwb3J0cmFpdHxlbnwxfHx8fDE3ODA2NDYzMDJ8MA&ixlib=rb-4.1.0&q=80&w=400" },
+  { name: "Zofia Laurent", role: "Specjalistka ds. wynajmu", deals: "210 skutecznych wynajmów", img: "https://images.unsplash.com/photo-1581065178047-8ee15951ede6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwyfHxyZWFsJTIwZXN0YXRlJTIwYWdlbnQlMjBwcm9mZXNzaW9uYWwlMjBwb3J0cmFpdHxlbnwxfHx8fDE3ODA2NDYzMDJ8MA&ixlib=rb-4.1.0&q=80&w=400", objectPosition: "50% 18%" },
+  { name: "Maria Gonzalez", role: "Doradca inwestycyjny", deals: "Portfel o wartości 42 mln zł", img: "https://images.unsplash.com/photo-1610631066894-62452ccb927c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwzfHxyZWFsJTIwZXN0YXRlJTIwYWdlbnQlMjBwcm9mZXNzaW9uYWwlMjBwb3J0cmFpdHxlbnwxfHx8fDE3ODA2NDYzMDJ8MA&ixlib=rb-4.1.0&q=80&w=400", objectPosition: "50% 16%" },
 ];
 
 const faqs: FAQ[] = [
@@ -170,10 +136,6 @@ const stats: Stat[] = [
   { value: "15 lat", label: "Doświadczenia" },
 ];
 
-// ═════════════════════════════════════════════════════════════════════════════
-// COMPONENTS
-// ═════════════════════════════════════════════════════════════════════════════
-
 function Navbar({ onNav }: { onNav: (id: string) => void }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -183,36 +145,40 @@ function Navbar({ onNav }: { onNav: (id: string) => void }) {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-[#eee]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <header className="sticky top-0 z-50 bg-background border-b border-border" style={{ fontFamily: "'DM Sans', sans-serif" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-[64px] flex items-center justify-between gap-4">
         <button onClick={() => handleNav("hero")} className="flex items-center gap-1 shrink-0">
-          <span style={{ color: "#0076FF", fontWeight: 700, fontSize: 20 }}>HomeKey</span>
-          <span style={{ color: "#333", fontWeight: 700, fontSize: 20 }}>Realty</span>
+          <span className="text-primary" style={{ fontWeight: 700, fontSize: 20 }}>HomeKey</span>
+          <span className="text-foreground" style={{ fontWeight: 700, fontSize: 20 }}>Realty</span>
         </button>
         <nav className="hidden md:flex items-center gap-6">
           {navLinks.map((l) => (
-            <button key={l.id} onClick={() => handleNav(l.id)} className="text-[#555] hover:text-[#0076FF] transition-colors" style={{ fontSize: 14, fontWeight: 500 }}>
+            <button key={l.id} onClick={() => handleNav(l.id)} className="text-muted-foreground hover:text-primary transition-colors" style={{ fontSize: 14, fontWeight: 500 }}>
               {l.label}
             </button>
           ))}
         </nav>
-        <button onClick={() => handleNav("contact")} className="hidden md:flex items-center h-9 px-4 rounded-[3px] text-white hover:opacity-90 transition-opacity shrink-0" style={{ background: "#0076FF", fontWeight: 700, fontSize: 14 }}>
+        <CtaButton onClick={() => handleNav("contact")} className="hidden md:flex items-center shrink-0" size="md">
           Bezpłatna wycena
-        </button>
-        <button className="md:hidden p-1 text-[#333]" onClick={() => setMenuOpen(!menuOpen)}>
+        </CtaButton>
+        <button
+          className="md:hidden p-1 text-foreground"
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label={menuOpen ? "Zamknij menu" : "Otwórz menu"}
+        >
           <IconMenu open={menuOpen} />
         </button>
       </div>
       {menuOpen && (
-        <div className="md:hidden bg-white border-t border-[#eee] px-4 py-3 flex flex-col animate-in slide-in-from-top-2 duration-300">
+        <div className="md:hidden bg-background border-t border-border px-4 py-3 flex flex-col animate-in slide-in-from-top-2 duration-300">
           {navLinks.map((l) => (
-            <button key={l.id} onClick={() => handleNav(l.id)} className="text-left text-[#333] py-3 border-b border-[#f5f5f5] last:border-0" style={{ fontSize: 16, fontWeight: 500 }}>
+            <button key={l.id} onClick={() => handleNav(l.id)} className="text-left text-foreground py-3 border-b border-border last:border-0" style={{ fontSize: 16, fontWeight: 500 }}>
               {l.label}
             </button>
           ))}
-          <button onClick={() => handleNav("contact")} className="mt-3 h-11 rounded-[3px] text-white" style={{ background: "#0076FF", fontWeight: 700, fontSize: 15 }}>
+          <CtaButton onClick={() => handleNav("contact")} className="mt-3" size="lg">
             Bezpłatna wycena
-          </button>
+          </CtaButton>
         </div>
       )}
     </header>
@@ -228,7 +194,14 @@ function Hero({ onNav }: { onNav: (id: string) => void }) {
   return (
     <section ref={ref} id="hero" className="relative min-h-[520px] md:min-h-[620px] flex items-center">
       <div className="absolute inset-0 overflow-hidden bg-[#1a2d45]">
-        <img src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBob3VzZSUyMGV4dGVyaW9yJTIwcmVhbCUyMGVzdGF0ZXxlbnwxfHx8fDE3ODA2Njc2NzF8MA&ixlib=rb-4.1.0&q=80&w=1920" alt="Nowoczesny dom" className="w-full h-full object-cover opacity-70" />
+        <img
+          src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBob3VzZSUyMGV4dGVyaW9yJTIwcmVhbCUyMGVzdGF0ZXxlbnwxfHx8fDE3ODA2Njc2NzF8MA&ixlib=rb-4.1.0&q=80&w=1920"
+          alt="Nowoczesny dom"
+          className="w-full h-full object-cover opacity-70"
+          loading="eager"
+          fetchPriority="high"
+          decoding="async"
+        />
         <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.25) 70%, transparent 100%)" }} />
       </div>
       <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 py-14 md:py-20" style={{ fontFamily: "'DM Sans', sans-serif" }}>
@@ -271,19 +244,21 @@ function Services() {
   const isVisible = useInView(ref);
 
   return (
-    <section ref={ref} id="services" className="py-14 md:py-20 bg-white" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <section ref={ref} id="services" className="py-14 md:py-20 bg-background" style={{ fontFamily: "'DM Sans', sans-serif" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className={`max-w-xl mb-10 md:mb-12 transition-all duration-1000 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}>
-          <p className="uppercase tracking-widest mb-2" style={{ color: "#0076FF", fontSize: 12, fontWeight: 700 }}>Nasze usługi</p>
-          <h2 className="text-[#333] mb-3" style={{ fontSize: "clamp(26px,4vw,40px)", fontWeight: 700, lineHeight: 1.2 }}>Kompleksowa obsługa nieruchomości</h2>
-          <p className="text-[#999]" style={{ fontSize: "clamp(15px,1.5vw,17px)", lineHeight: 1.7 }}>Niezależnie czy kupujesz, sprzedajesz czy inwestujesz — nasi agenci zapewniają wyniki z pełną przejrzystością.</p>
+          <SectionHeading
+            kicker="Nasze usługi"
+            title="Kompleksowa obsługa nieruchomości"
+            description="Niezależnie czy kupujesz, sprzedajesz czy inwestujesz — nasi agenci zapewniają wyniki z pełną przejrzystością."
+          />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {services.map((s, i) => (
-            <div key={s.title} className={`border border-[#eee] rounded-[4px] p-5 hover:shadow-md hover:border-[#0076FF]/30 transition-all group cursor-pointer ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`} style={{ transitionDelay: isVisible ? `${i * 100}ms` : "0ms" }}>
+            <div key={s.title} className={`border border-border rounded-[4px] p-5 hover:shadow-md hover:border-primary/30 transition-all group cursor-pointer ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`} style={{ transitionDelay: isVisible ? `${i * 100}ms` : "0ms" }}>
               <div className="mb-4">{s.icon}</div>
-              <h3 className="text-[#333] mb-2 group-hover:text-[#0076FF] transition-colors" style={{ fontSize: 16, fontWeight: 700 }}>{s.title}</h3>
-              <p className="text-[#999]" style={{ fontSize: 14, lineHeight: 1.6 }}>{s.desc}</p>
+              <h3 className="text-foreground mb-2 group-hover:text-primary transition-colors" style={{ fontSize: 16, fontWeight: 700 }}>{s.title}</h3>
+              <p className="text-muted-foreground" style={{ fontSize: 14, lineHeight: 1.6 }}>{s.desc}</p>
             </div>
           ))}
         </div>
@@ -294,16 +269,16 @@ function Services() {
 
 function PropertyCard({ p, index, visible }: { p: Property; index: number; visible: boolean }) {
   return (
-    <div className={`bg-white border border-[#eee] rounded-[4px] overflow-hidden hover:shadow-lg transition-all group ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`} style={{ transitionDelay: visible ? `${index * 100}ms` : "0ms" }}>
-      <div className="relative overflow-hidden bg-[#eee]" style={{ height: 200 }}>
-        <img src={p.img} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-        <span className="absolute top-3 left-3 px-2.5 py-1 rounded-[3px] text-white uppercase tracking-wide" style={{ background: "#0076FF", fontSize: 10, fontWeight: 700 }}>{p.type}</span>
+    <div className={`bg-background border border-border rounded-[4px] overflow-hidden hover:shadow-lg transition-all group ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`} style={{ transitionDelay: visible ? `${index * 100}ms` : "0ms" }}>
+      <div className="relative overflow-hidden bg-muted" style={{ height: 200 }}>
+        <img src={p.img} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" decoding="async" />
+        <span className="absolute top-3 left-3 px-2.5 py-1 rounded-[3px] bg-primary text-primary-foreground uppercase tracking-wide" style={{ fontSize: 10, fontWeight: 700 }}>{p.type}</span>
       </div>
       <div className="p-4">
-        <p style={{ color: "#0076FF", fontWeight: 700, fontSize: 18 }}>{p.price}</p>
-        <h3 className="text-[#333] mt-1 mb-1" style={{ fontSize: 15, fontWeight: 700 }}>{p.title}</h3>
-        <p className="text-[#999] mb-3" style={{ fontSize: 12 }}>{p.address}</p>
-        <div className="flex items-center gap-3 text-[#999] border-t border-[#f0f0f0] pt-3 flex-wrap">
+        <p className="text-primary" style={{ fontWeight: 700, fontSize: 18 }}>{p.price}</p>
+        <h3 className="text-foreground mt-1 mb-1" style={{ fontSize: 15, fontWeight: 700 }}>{p.title}</h3>
+        <p className="text-muted-foreground mb-3" style={{ fontSize: 12 }}>{p.address}</p>
+        <div className="flex items-center gap-3 text-muted-foreground border-t border-border pt-3 flex-wrap">
           <span className="flex items-center gap-1" style={{ fontSize: 12 }}><IconBed />{p.beds} sypialnie</span>
           <span className="flex items-center gap-1" style={{ fontSize: 12 }}><IconBath />{p.baths} łazienki</span>
           <span className="flex items-center gap-1" style={{ fontSize: 12 }}><IconArea />{p.area}</span>
@@ -325,12 +300,11 @@ function Properties({ onNav }: { onNav: (id: string) => void }) {
   });
 
   return (
-    <section ref={ref} id="properties" className="py-14 md:py-20" style={{ background: "#f7f7f7", fontFamily: "'DM Sans', sans-serif" }}>
+    <section ref={ref} id="properties" className="py-14 md:py-20 bg-secondary" style={{ fontFamily: "'DM Sans', sans-serif" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-5 mb-8 md:mb-10">
           <div>
-            <p className="uppercase tracking-widest mb-2" style={{ color: "#0076FF", fontSize: 12, fontWeight: 700 }}>Portfolio</p>
-            <h2 className="text-[#333]" style={{ fontSize: "clamp(26px,4vw,40px)", fontWeight: 700, lineHeight: 1.2 }}>Aktualne oferty</h2>
+            <SectionHeading kicker="Portfolio" title="Aktualne oferty" />
           </div>
           <div className="flex gap-1.5 flex-wrap">
             {[{ key: "all", label: "Wszystkie" }, { key: "sale", label: "Na sprzedaż" }, { key: "rent", label: "Na wynajem" }].map((f) => (
@@ -344,7 +318,7 @@ function Properties({ onNav }: { onNav: (id: string) => void }) {
           {filtered.map((p, i) => <PropertyCard key={p.id} p={p} index={i} visible={isVisible} />)}
         </div>
         <div className="mt-8 text-center">
-          <button onClick={() => onNav("contact")} className="h-11 px-8 rounded-[3px] text-white hover:opacity-90 transition-opacity" style={{ background: "#0076FF", fontWeight: 700, fontSize: 15 }}>Zapytaj o ofertę</button>
+          <CtaButton onClick={() => onNav("contact")} size="lg">Zapytaj o ofertę</CtaButton>
         </div>
       </div>
     </section>
@@ -353,7 +327,7 @@ function Properties({ onNav }: { onNav: (id: string) => void }) {
 
 function Testimonials() {
   const [active, setActive] = useState(0);
-  const ref = useRef<HTMLSection>(null);
+  const ref = useRef<HTMLElement>(null);
   const isVisible = useInView(ref);
   const t = testimonials[active];
 
@@ -369,7 +343,13 @@ function Testimonials() {
         <p className="text-[#999] mb-8" style={{ fontSize: 13 }}>{t.role}</p>
         <div className="flex justify-center gap-2.5">
           {testimonials.map((_, i) => (
-            <button key={i} onClick={() => setActive(i)} className="rounded-full transition-all duration-300" style={{ width: i === active ? 22 : 8, height: 8, background: i === active ? "#0076FF" : "#ccc" }} />
+            <button
+              key={i}
+              onClick={() => setActive(i)}
+              className="rounded-full transition-all duration-300"
+              style={{ width: i === active ? 22 : 8, height: 8, background: i === active ? "#0076FF" : "#ccc" }}
+              aria-label={`Przejdź do opinii ${i + 1}`}
+            />
           ))}
         </div>
       </div>
@@ -393,11 +373,13 @@ function Team() {
           {team.map((m, i) => (
             <div key={m.name} className={`group transition-all duration-1000 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`} style={{ transitionDelay: isVisible ? `${i * 150}ms` : "0ms" }}>
               <div className="relative rounded-[4px] overflow-hidden bg-[#eee] mb-4" style={{ height: 280 }}>
-                <img src={m.img} alt={m.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                <img src={m.img} alt={m.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" style={{ objectPosition: m.objectPosition ?? "50% 0%" }} loading="lazy" decoding="async" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                  {[<IconFacebook />, <IconTwitter />, <IconInstagram />].map((icon, j) => (
-                    <button key={j} className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-[#333] hover:text-[#0076FF] transition-colors">{icon}</button>
+                  {["Facebook", "Twitter", "Instagram"].map((network, j) => (
+                    <button key={j} className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-[#333] hover:text-[#0076FF] transition-colors" aria-label={`${network} - ${m.name}`}>
+                      {j === 0 ? <IconFacebook /> : j === 1 ? <IconTwitter /> : <IconInstagram />}
+                    </button>
                   ))}
                 </div>
               </div>
@@ -516,10 +498,9 @@ function Contact() {
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const onSubmit = async (data: ContactFormData) => {
+  const onSubmit = async (_data: ContactFormData) => {
     setIsSubmitting(true);
     await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log("Form submitted:", data);
     setIsSubmitting(false);
     setSubmitted(true);
   };
@@ -552,9 +533,9 @@ function Contact() {
               </div>
             </div>
             <div className="flex gap-3">
-              {[<IconFacebook />, <IconTwitter />, <IconInstagram />].map((icon, i) => (
-                <button key={i} className="w-10 h-10 rounded-full border border-[#eee] flex items-center justify-center text-[#555] hover:text-[#0076FF] hover:border-[#0076FF] transition-colors">
-                  {icon}
+              {["Facebook", "Twitter", "Instagram"].map((network, i) => (
+                <button key={i} className="w-10 h-10 rounded-full border border-[#eee] flex items-center justify-center text-[#555] hover:text-[#0076FF] hover:border-[#0076FF] transition-colors" aria-label={`Profil ${network}`}>
+                  {i === 0 ? <IconFacebook /> : i === 1 ? <IconTwitter /> : <IconInstagram />}
                 </button>
               ))}
             </div>

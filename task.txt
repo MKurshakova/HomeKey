@@ -37,16 +37,10 @@ Oczekujemy: 3-minutowej prezentacji wdrożonej aplikacji połączonej z obroną 
 Kryteria: Umiejętność rzeczowego uzasadnienia wykorzystanych wzorców projektowych (np. dlaczego wydzielono "Dumb Components", jak zhermetyzowano logikę walidacji, jak działa funkcja łącząca klasy Tailwinda). Ocenia się profesjonalizm i umiejętność przekazania informacji.
 
 
-przesyłamy na moodle: 
 
-linki do strony
-
-zip do kodu strony 
-
-projekt figma 
 
 video "Tech Pitch"
-
+przyklad:
 Otwarcie 
 
 Dzień dobry, chciałabym zaprezentować projekt Architech Agency, landing page agencji architektonicznej. Strona jest wdrożona publicznie na Vercelu i uzyskała 99 punktów Performance oraz 90 Accessibility w Google Lighthouse. Projekt jest zbudowany w React z Vite i TypeScript, z Tailwind CSS v4 jako systemem stylowania.
