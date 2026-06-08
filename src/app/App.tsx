@@ -145,7 +145,7 @@ function Navbar({ onNav }: { onNav: (id: string) => void }) {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-background border-b border-border" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <header className="fixed top-0 inset-x-0 z-50 bg-background border-b border-border" style={{ fontFamily: "'DM Sans', sans-serif" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-[64px] flex items-center justify-between gap-4">
         <button onClick={() => handleNav("hero")} className="flex items-center gap-1 shrink-0">
           <span className="text-primary" style={{ fontWeight: 700, fontSize: 20 }}>HomeKey</span>
@@ -670,21 +670,27 @@ function Footer({ onNav }: { onNav: (id: string) => void }) {
 export default function App() {
   const scrollTo = (id: string) => {
     const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (!el) return;
+
+    const headerOffset = 72;
+    const y = Math.max(el.getBoundingClientRect().top + window.scrollY - headerOffset, 0);
+    window.scrollTo({ top: y, behavior: "smooth" });
   };
 
   return (
     <div className="min-h-screen overflow-x-hidden" style={{ fontFamily: "'DM Sans', sans-serif" }}>
       <Navbar onNav={scrollTo} />
-      <Hero onNav={scrollTo} />
-      <Services />
-      <Properties onNav={scrollTo} />
-      <Testimonials />
-      <Team />
-      <FAQ />
-      <Plans onNav={scrollTo} />
-      <Contact />
-      <Footer onNav={scrollTo} />
+      <div className="pt-[64px]">
+        <Hero onNav={scrollTo} />
+        <Services />
+        <Properties onNav={scrollTo} />
+        <Testimonials />
+        <Team />
+        <FAQ />
+        <Plans onNav={scrollTo} />
+        <Contact />
+        <Footer onNav={scrollTo} />
+      </div>
     </div>
   );
 }
